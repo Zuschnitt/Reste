@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>Zuschnitt Reste</title>
+  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background: #f4f4f4;
+    }
+
+    .print-button {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      font-size: 16px;
+      background: none;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      padding: 6px 10px;
+      cursor: pointer;
+    }
+    @media print {
+      .print-button { display: none; }
+      body { margin: 0; background: #fff; }
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 50px;
+    }
+
+    .table {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      background: #fff;
+      padding: 8px;
+      border: 1px solid #ccc;
+      font-size: 12px;
+    }
+
+    label { font-weight: bold; font-size: 12px; }
+    input {
+      padding: 4px;
+      font-size: 12px;
+      border: 1px solid #bbb;
+    }
+    input[readonly] { background: #f2f2f2; }
+
+    .artikel-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .artikelnummer {
+      width: 80px;
+    }
+    .barcode {
+      width: 120px;
+      height: 40px;
+    }
+
+    .preisRabatt {
+      font-size: 24px;
+      font-weight: bold;
+      color: red;
+      background: #fff0f0;
+      border: 2px solid red;
+      padding: 6px;
+    }
+
+    @page {
+      size: A4 landscape;
+      margin: 10mm;
+    }
+    @media print {
+      .grid {
+        page-break-inside: avoid;
+        break-inside: avoid;
+        transform: scale(0.9);
+        transform-origin: top left;
+      }
+      .table {
+        font-size: 10px;
+      }
+      input, label {
+        font-size: 10px;
+      }
+      .preisRabatt {
+        font-size: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <button class="print-button" onclick="window.print()">🖨️ Drucken</button>
+
+  <div class="grid">
+    <!-- Beispiel-Tabelle -->
+    <div class="table">
+      <label>Artikelnummer:</label>
+      <div class="artikel-row">
+        <input type="text" class="artikelnummer">
+        <svg class="barcode"></svg>
+      </div>
+
+      <label>Bezeichnung:</label>
+      <input type="text" class="bezeichnung" readonly>
+
+      <label>Stärke:</label>
+      <input type="text" class="staerke" readonly>
+
+      <label>Länge (mm):</label>
+      <input type="number" class="laenge">
+      <label>Breite (mm):</label>
+      <input type="number" class="breite">
+      <label>Fläche (m²):</label>
+      <input type="text" class="flaeche" readonly>
+      <label>Preis:</label>
+      <input type="text" class="preis" readonly>
+      <label>Neuer Preis (mit 50% Nachlass):</label>
+      <input type="text" class="preisRabatt" readonly>
+    </div>
+
+    <!-- fünf weitere identische Tabellen -->
+    <!-- ... einfach kopieren wie oben -->
+  </div>
+
+  <script>
+    let ARTIKEL_INDEX = null;
+    async function ladeArtikelListe() {
+      if (ARTIKEL_INDEX) return ARTIKEL_INDEX;
+      try {
+        const response = await fetch('./artikel_liste.json');
+        if (!response.ok) throw new Error("HTTP " + response.status);
+        const data = await response.json();
+        ARTIKEL_INDEX = data; // direkt als Objekt
+        return ARTIKEL_INDEX;
+      } catch (e) {
+        console.error("Fehler beim Laden artikel_liste.json", e);
+        ARTIKEL_INDEX = {};
+        return ARTIKEL_INDEX;
+      }
+    }
+
+    async function berechne(table) {
+      const artikelnummer = String(table.querySelector('.artikelnummer').value || '').trim();
+      const laenge = parseFloat(table.querySelector('.laenge').value) || 0;
+      const breite = parseFloat(table.querySelector('.breite').value) || 0;
+
+      // Fläche mm² -> m²
+      const flaeche = (laenge * breite) / 1_000_000;
+      table.querySelector('.flaeche').value = flaeche > 0 ? flaeche.toFixed(3) : '0.000';
+
+      const index = await ladeArtikelListe();
+      const artikel = index[artikelnummer]; // Zugriff über Schlüssel
+
+      const preisFeld = table.querySelector('.preis');
+      const rabattFeld = table.querySelector('.preisRabatt');
+      const bezFeld = table.querySelector('.bezeichnung');
+      const staerkeFeld = table.querySelector('.staerke');
+
+      if (artikel) {
+        bezFeld.value = artikel.bezeichnung || '';
+        staerkeFeld.value = artikel.staerke || '';
+        if (flaeche > 0) {
+          const preis = artikel.preis * flaeche;
+          preisFeld.value = preis.toFixed(2) + ' €';
+          rabattFeld.value = (preis * 0.5).toFixed(2) + ' €';
+        } else {
+          preisFeld.value = artikel.preis.toFixed(2) + ' €/m²';
+          rabattFeld.value = (artikel.preis * 0.5).toFixed(2) + ' €/m²';
+        }
+      } else if (artikelnummer) {
+        bezFeld.value = '';
+        staerkeFeld.value = '';
+        preisFeld.value = 'Artikel nicht gefunden';
+        rabattFeld.value = '';
+      } else {
+        bezFeld.value = '';
+        staerkeFeld.value = '';
+        preisFeld.value = '';
+        rabattFeld.value = '';
+      }
+
+      // Barcode aktualisieren
+      const barcodeSvg = table.querySelector('.barcode');
+      if (artikelnummer) {
+        JsBarcode(barcodeSvg, artikelnummer, {format: "CODE128", displayValue: false});
+      } else {
+        barcodeSvg.innerHTML = '';
+      }
+    }
+
+    document.addEventListener('input', (e) => {
+      const table = e.target.closest('.table');
+      if (table) berechne(table);
+    });
+  </script>
+</body>
+</html>
