@@ -59,7 +59,7 @@
       gap: 8px;
     }
     .artikelnummer {
-      width: 80px; /* kürzeres Feld */
+      width: 80px;
     }
     .barcode {
       width: 120px;
@@ -103,14 +103,13 @@
   <button class="print-button" onclick="window.print()">🖨️ Drucken</button>
 
   <div class="grid">
-    <!-- Beispiel-Tabelle -->
+    <!-- 6 Tabellen -->
     <div class="table">
       <label>Artikelnummer:</label>
       <div class="artikel-row">
         <input type="text" class="artikelnummer">
         <svg class="barcode"></svg>
       </div>
-
       <label>Länge (mm):</label>
       <input type="number" class="laenge">
       <label>Breite (mm):</label>
@@ -136,12 +135,14 @@
     async function ladeArtikelListe() {
       if (ARTIKEL_INDEX) return ARTIKEL_INDEX;
       try {
-        const response = await fetch('artikel_liste.json');
-        const liste = await response.json();
-        ARTIKEL_INDEX = new Map(liste.map(a => [String(a.artikelnummer).trim(), Number(a.preis)]));
+        const response = await fetch('./artikel_liste.json');
+        if (!response.ok) throw new Error("HTTP " + response.status);
+        const data = await response.json();
+        ARTIKEL_INDEX = data; // direkt als Objekt speichern
         return ARTIKEL_INDEX;
       } catch (e) {
-        ARTIKEL_INDEX = new Map();
+        console.error("Fehler beim Laden artikel_liste.json", e);
+        ARTIKEL_INDEX = {};
         return ARTIKEL_INDEX;
       }
     }
@@ -150,15 +151,17 @@
       const artikelnummer = String(table.querySelector('.artikelnummer').value || '').trim();
       const laenge = parseFloat(table.querySelector('.laenge').value) || 0;
       const breite = parseFloat(table.querySelector('.breite').value) || 0;
+
+      // Fläche mm² -> m²
       const flaeche = (laenge * breite) / 1_000_000;
       table.querySelector('.flaeche').value = flaeche > 0 ? flaeche.toFixed(3) : '0.000';
+
       const index = await ladeArtikelListe();
-      const preisProM2 = index.get(artikelnummer);
+      const artikel = index[artikelnummer]; // Zugriff über Schlüssel
+
       const preisFeld = table.querySelector('.preis');
       const rabattFeld = table.querySelector('.preisRabatt');
-      if (preisProM2 !== undefined && flaeche > 0) {
-        const preis = preisProM2 * flaeche;
+
+      if (artikel && flaeche > 0) {
+        const preis = artikel.preis * flaeche;
         preisFeld.value = preis.toFixed(2) + ' €';
-        rabattFeld.value = (preis * 0.5).toFixed(2) + ' €';
-      } else if (artikelnummer && preisProM2 === undefined) {
-        preisFeld
