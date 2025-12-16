@@ -4,116 +4,122 @@
   <meta charset="UTF-8">
   <link rel="icon" type="image/x-icon" href="favicon.ico">
   <title>Zuschnitt Reste</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- JsBarcode CDN -->
   <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
   <style>
     body { font-family: Arial, sans-serif; margin: 20px; background: #f4f4f4; }
-    .print-button { position: fixed; top: 10px; right: 10px; font-size: 16px; }
+    .print-button { position: fixed; top: 10px; right: 10px; font-size: 16px; background: none; border: 1px solid #ccc; border-radius: 4px; padding: 6px 10px; cursor: pointer; }
     @media print { .print-button { display: none; } body { margin: 0; background: #fff; } }
+
     .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 50px; }
-    .table { display: flex; flex-direction: column; gap: 6px; background: #fff; padding: 8px; border: 1px solid #ccc; font-size: 12px; }
+    .table { display: flex; flex-direction: column; gap: 6px; background: #fff; padding: 8px; border: 1px solid #ccc; font-size: 12px; break-inside: avoid; page-break-inside: avoid; }
     label { font-weight: bold; font-size: 12px; }
-    input { padding: 4px; font-size: 12px; border: 1px solid #bbb; }
+    input { padding: 4px; font-size: 12px; border: 1px solid #bbb; border-radius: 3px; }
     input[readonly] { background: #f2f2f2; }
+
     .artikel-row { display: flex; align-items: center; gap: 8px; }
-    .artikelnummer { width: 80px; }
-    .barcode { width: 120px; height: 40px; }
+    .artikelnummer { width: 100px; }
+    .barcode { width: 140px; height: 44px; }
+
     .preisRabatt { font-size: 24px; font-weight: bold; color: red; background: #fff0f0; border: 2px solid red; padding: 6px; }
+
+    .notice { display:none; margin: 10px 0 0; padding: 8px 10px; background:#fff3cd; border:1px solid #ffeeba; color:#856404; border-radius:4px; }
+    .notice.show { display:block; }
+
     @page { size: A4 landscape; margin: 10mm; }
-    @media print { .grid { transform: scale(0.9); transform-origin: top left; } .table { font-size: 10px; } .preisRabatt { font-size: 20px; } }
+    @media print {
+      .grid { transform: scale(0.9); transform-origin: top left; }
+      .table { font-size: 10px; }
+      input, label { font-size: 10px; }
+      .preisRabatt { font-size: 20px; }
+    }
   </style>
 </head>
 <body>
-  <button class="print-button" onclick="window.print()">🖨️ Drucken</button>
+  <button class="print-button" type="button" onclick="window.print()">🖨️ Drucken</button>
+  <div id="notice" class="notice"></div>
 
-  <div class="grid">
-    <!-- 6 Tabellen -->
-    <div class="table">
-      <label>Artikelnummer:</label>
-      <div class="artikel-row"><input type="text" class="artikelnummer"><svg class="barcode"></svg></div>
-      <label>Bezeichnung:</label><input type="text" class="bezeichnung" readonly>
-      <label>Stärke:</label><input type="text" class="staerke" readonly>
-      <label>Länge (mm):</label><input type="number" class="laenge">
-      <label>Breite (mm):</label><input type="number" class="breite">
-      <label>Fläche (m²):</label><input type="text" class="flaeche" readonly>
-      <label>Preis:</label><input type="text" class="preis" readonly>
-      <label>Neuer Preis (mit 50% Nachlass):</label><input type="text" class="preisRabatt" readonly>
-    </div>
-
-    <div class="table">
-      <label>Artikelnummer:</label>
-      <div class="artikel-row"><input type="text" class="artikelnummer"><svg class="barcode"></svg></div>
-      <label>Bezeichnung:</label><input type="text" class="bezeichnung" readonly>
-      <label>Stärke:</label><input type="text" class="staerke" readonly>
-      <label>Länge (mm):</label><input type="number" class="laenge">
-      <label>Breite (mm):</label><input type="number" class="breite">
-      <label>Fläche (m²):</label><input type="text" class="flaeche" readonly>
-      <label>Preis:</label><input type="text" class="preis" readonly>
-      <label>Neuer Preis (mit 50% Nachlass):</label><input type="text" class="preisRabatt" readonly>
-    </div>
-
-    <div class="table">
-      <label>Artikelnummer:</label>
-      <div class="artikel-row"><input type="text" class="artikelnummer"><svg class="barcode"></svg></div>
-      <label>Bezeichnung:</label><input type="text" class="bezeichnung" readonly>
-      <label>Stärke:</label><input type="text" class="staerke" readonly>
-      <label>Länge (mm):</label><input type="number" class="laenge">
-      <label>Breite (mm):</label><input type="number" class="breite">
-      <label>Fläche (m²):</label><input type="text" class="flaeche" readonly>
-      <label>Preis:</label><input type="text" class="preis" readonly>
-      <label>Neuer Preis (mit 50% Nachlass):</label><input type="text" class="preisRabatt" readonly>
-    </div>
-
-    <div class="table">
-      <label>Artikelnummer:</label>
-      <div class="artikel-row"><input type="text" class="artikelnummer"><svg class="barcode"></svg></div>
-      <label>Bezeichnung:</label><input type="text" class="bezeichnung" readonly>
-      <label>Stärke:</label><input type="text" class="staerke" readonly>
-      <label>Länge (mm):</label><input type="number" class="laenge">
-      <label>Breite (mm):</label><input type="number" class="breite">
-      <label>Fläche (m²):</label><input type="text" class="flaeche" readonly>
-      <label>Preis:</label><input type="text" class="preis" readonly>
-      <label>Neuer Preis (mit 50% Nachlass):</label><input type="text" class="preisRabatt" readonly>
-    </div>
-
-    <div class="table">
-      <label>Artikelnummer:</label>
-      <div class="artikel-row"><input type="text" class="artikelnummer"><svg class="barcode"></svg></div>
-      <label>Bezeichnung:</label><input type="text" class="bezeichnung" readonly>
-      <label>Stärke:</label><input type="text" class="staerke" readonly>
-      <label>Länge (mm):</label><input type="number" class="laenge">
-      <label>Breite (mm):</label><input type="number" class="breite">
-      <label>Fläche (m²):</label><input type="text" class="flaeche" readonly>
-      <label>Preis:</label><input type="text" class="preis" readonly>
-      <label>Neuer Preis (mit 50% Nachlass):</label><input type="text" class="preisRabatt" readonly>
-    </div>
-
-    <div class="table">
-      <label>Artikelnummer:</label>
-      <div class="artikel-row"><input type="text" class="artikelnummer"><svg class="barcode"></svg></div>
-      <label>Bezeichnung:</label><input type="text" class="bezeichnung" readonly>
-      <label>Stärke:</label><input type="text" class="staerke" readonly>
-      <label>Länge (mm):</label><input type="number" class="laenge">
-      <label>Breite (mm):</label><input type="number" class="breite">
-      <label>Fläche (m²):</label><input type="text" class="flaeche" readonly>
-      <label>Preis:</label><input type="text" class="preis" readonly>
-      <label>Neuer Preis (mit 50% Nachlass):</label><input type="text" class="preisRabatt" readonly>
-    </div>
-  </div>
+  <div id="grid" class="grid"></div>
 
   <script>
+    // --- Zustand / Cache ---
     let ARTIKEL_INDEX = null;
+    const TABLE_COUNT = 6;
+
+    // --- Hilfen ---
+    function showNotice(msg) {
+      const n = document.getElementById('notice');
+      n.textContent = msg;
+      n.classList.add('show');
+    }
+    function clearNotice() {
+      const n = document.getElementById('notice');
+      n.textContent = '';
+      n.classList.remove('show');
+    }
 
     async function ladeArtikelListe() {
       if (ARTIKEL_INDEX) return ARTIKEL_INDEX;
       try {
-        const response = await fetch('./artikel_liste.json');
-        if (!response.ok) throw new Error("HTTP " + response.status);
+        const response = await fetch('./artikel_liste.json', { cache: 'no-cache' });
+        if (!response.ok) throw new Error('HTTP ' + response.status);
         ARTIKEL_INDEX = await response.json();
+        console.log('[OK] artikel_liste.json geladen', ARTIKEL_INDEX);
         return ARTIKEL_INDEX;
       } catch (e) {
-        console.error("Fehler beim Laden artikel_liste.json", e);
+        console.error('[FEHLER] artikel_liste.json laden:', e);
+        showNotice('Konnte artikel_liste.json nicht laden (' + e.message + '). Prüfe Pfad und JSON-Syntax.');
         ARTIKEL_INDEX = {};
         return ARTIKEL_INDEX;
+      }
+    }
+
+    function createTableElement() {
+      const wrap = document.createElement('div');
+      wrap.className = 'table';
+      wrap.innerHTML = `
+        <label>Artikelnummer:</label>
+        <div class="artikel-row">
+          <input type="text" class="artikelnummer" autocomplete="off">
+          <svg class="barcode"></svg>
+        </div>
+
+        <label>Bezeichnung:</label>
+        <input type="text" class="bezeichnung" readonly>
+
+        <label>Stärke:</label>
+        <input type="text" class="staerke" readonly>
+
+        <label>Länge (mm):</label>
+        <input type="number" class="laenge" inputmode="decimal" step="any">
+
+        <label>Breite (mm):</label>
+        <input type="number" class="breite" inputmode="decimal" step="any">
+
+        <label>Fläche (m²):</label>
+        <input type="text" class="flaeche" readonly>
+
+        <label>Preis:</label>
+        <input type="text" class="preis" readonly>
+
+        <label>Neuer Preis (mit 50% Nachlass):</label>
+        <input type="text" class="preisRabatt" readonly>
+      `;
+      return wrap;
+    }
+
+    function updateBarcode(svgEl, value) {
+      if (!value) { svgEl.innerHTML = ''; return; }
+      if (typeof JsBarcode !== 'function') {
+        console.error('[FEHLER] JsBarcode nicht verfügbar');
+        showNotice('Barcode-Bibliothek nicht geladen. Prüfe Internetverbindung oder CDN.');
+        return;
+      }
+      try {
+        JsBarcode(svgEl, value, { format: 'CODE128', displayValue: false, margin: 0, height: 40 });
+      } catch (e) {
+        console.error('[FEHLER] Barcode rendern:', e);
       }
     }
 
@@ -121,5 +127,73 @@
       const artikelnummer = String(table.querySelector('.artikelnummer').value || '').trim();
       const laenge = parseFloat(table.querySelector('.laenge').value) || 0;
       const breite = parseFloat(table.querySelector('.breite').value) || 0;
+
+      // Fläche mm² -> m²
       const flaeche = (laenge * breite) / 1_000_000;
-      table.querySelector('.flaeche').value = flaeche >
+      table.querySelector('.flaeche').value = flaeche > 0 ? flaeche.toFixed(3) : '0.000';
+
+      // Datenbank holen
+      const index = await ladeArtikelListe();
+      const artikel = artikelnummer ? index[artikelnummer] : null;
+
+      const bezFeld = table.querySelector('.bezeichnung');
+      const staerkeFeld = table.querySelector('.staerke');
+      const preisFeld = table.querySelector('.preis');
+      const rabattFeld = table.querySelector('.preisRabatt');
+
+      if (artikel) {
+        bezFeld.value = artikel.bezeichnung || '';
+        staerkeFeld.value = artikel.staerke || '';
+        const preisProM2 = Number(artikel.preis) || 0;
+        if (flaeche > 0 && preisProM2 > 0) {
+          const preis = preisProM2 * flaeche;
+          preisFeld.value = preis.toFixed(2) + ' €';
+          rabattFeld.value = (preis * 0.5).toFixed(2) + ' €';
+        } else {
+          preisFeld.value = preisProM2 > 0 ? preisProM2.toFixed(2) + ' €/m²' : '';
+          rabattFeld.value = preisProM2 > 0 ? (preisProM2 * 0.5).toFixed(2) + ' €/m²' : '';
+        }
+      } else {
+        if (artikelnummer) {
+          preisFeld.value = 'Artikel nicht gefunden';
+          rabattFeld.value = '';
+        } else {
+          bezFeld.value = '';
+          staerkeFeld.value = '';
+          preisFeld.value = '';
+          rabattFeld.value = '';
+        }
+      }
+
+      // Barcode aktualisieren
+      updateBarcode(table.querySelector('.barcode'), artikelnummer);
+    }
+
+    function bindTableEvents(table) {
+      const inputs = table.querySelectorAll('input');
+      inputs.forEach(inp => {
+        inp.addEventListener('input', () => berechne(table));
+        inp.addEventListener('change', () => berechne(table));
+      });
+    }
+
+    // Initialisierung
+    document.addEventListener('DOMContentLoaded', async () => {
+      clearNotice();
+
+      // 6 Tabellen erzeugen
+      const grid = document.getElementById('grid');
+      for (let i = 0; i < TABLE_COUNT; i++) {
+        const t = createTableElement();
+        grid.appendChild(t);
+        bindTableEvents(t);
+      }
+
+      // Datenbank laden (damit erster Zugriff schnell ist)
+      await ladeArtikelListe();
+
+      console.log('[INIT] Bereit. Gib eine Artikelnummer ein und Länge/Breite.');
+    });
+  </script>
+</body>
+</html>
